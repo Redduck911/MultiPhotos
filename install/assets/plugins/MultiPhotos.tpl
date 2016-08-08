@@ -1,11 +1,11 @@
-﻿//<?php
+//<?php
 /**
  * MultiPhotos
  * 
  * Добавление нескольких фотографий к странице
  *
  * @category 	plugin
- * @version 	1.26
+ * @version 	1.2.7
  * @license 	http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
  * @author      Temus (temus3@gmail.com)
  * @internal	@properties &tvIds=TV Ids;text;&templ=Template;text;&role=Role;text;&resize=Resize: enable;list;true,false;false;&crop=Resize: cropping;list;true,false;true;&prefix=Resize: prefix;text;s_;&th_width=Resize: width;text;&th_height=Resize: height;text;&auto_big=Resize: auto big img;list;true,false;false;&auto_small=Resize: auto small img;list;true,false;false;&w=Preview: width;text;&h=Preview: height;text;&thumbUrl=PHPThumb URL;text;
@@ -79,7 +79,7 @@ var MultiPhotos = new Class({
 			onComplete: function(el){el.setStyle('background','none');this.setEditor();}.bind(this)
 		});	
 		this.box.getElements('div.fotoitem').setStyle('cursor','move');
-		this.box.getElements('input[type=text]').addEvent('click',function(){this.focus();});
+		this.box.getElements('input').addEvent('mousedown',function(event){event.stopPropagation();});
 	},
 	br: function(){return new Element('br');},
 	sp: function(text){return new Element('span').setText(text);},
@@ -136,7 +136,7 @@ var MultiPhotos = new Class({
 			inputs.each(function(item){itemsArr.push(item.value); if (item.value) noempty=true;});
 			if (noempty) hpArr.push(itemsArr);
 		});
-		this.fid.value = Json.toString(hpArr);
+		this.fid.value =(hpArr.length>0) ? Json.toString(hpArr) : '';
 	}
 });
 window.addEvent('domready', function(){
