@@ -2,7 +2,7 @@
 /**
  * MultiPhotos - вывод фотографий
  * @category 	snippet
- * @version 	1.2.4
+ * @version 	1.2.7
  * @license 	http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
  * @author      Temus (temus3@gmail.com)
  * @internal	@properties

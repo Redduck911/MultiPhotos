@@ -1,12 +1,12 @@
 ﻿<?php
 /**
- * MultiPhotosй
+ * MultiPhotos
  *
- * @category 	snippet
- * @version 	1.2.4
- * @license 	http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
+ * @category snippet
+ * @version  1.2.7
+ * @license  http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
  * @author      Temus (temus3@gmail.com)
- * @internal	@modx_category add
+ * @internal @modx_category add
  * @internal    @installset base, sample
  */
  
