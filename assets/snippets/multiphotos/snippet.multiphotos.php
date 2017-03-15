@@ -1,5 +1,15 @@
 <?php
-if(!defined('MODX_BASE_PATH')){die('What are you doing? Get out of here!');}
+/**
+ * MultiPhotos - вывод фотографий
+ * @category 	snippet
+ * @version 	1.2.7
+ * @license 	http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
+ * @author      Temus (temus3@gmail.com)
+ * @internal	@properties
+ * @internal	@modx_category Gallery
+ * @internal    @installset base
+ */
+ 
 $tvname = isset($tvname) ? $tvname : 'photos';
 $outerTpl = isset($outerTpl) ? $modx->getChunk($outerTpl) : '<div class="thumbs">[+photos+]</div>';
 $rowTpl = isset($rowTpl) ? $modx->getChunk($rowTpl) : '<a href="[+link+]" id="thumb_[+num+]"><img src="[+url+]" alt="" title="[+title+]" /></a>';
