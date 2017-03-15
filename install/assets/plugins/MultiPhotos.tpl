@@ -106,7 +106,7 @@ var MultiPhotos = new Class({
 			onComplete: function(el){el.setStyle('background','none');this.setEditor();}.bind(this)
 		});
 		this.box.getElements('div.fotoitem').setStyle('cursor','move');
-		this.box.getElements('input[type=text]').addEvent('click',function(){this.focus();});
+		this.box.getElements('input').addEvent('mousedown',function(event){event.stopPropagation();});
 	},
 	br: function(){return new Element('br');},
 	sp: function(text){return new Element('span').setText(text);},
