@@ -1,17 +1,3 @@
-﻿//<?php
-/**
- * MultiPhotos
- * 
- * Добавление нескольких фотографий к странице
- *
- * @category plugin
- * @version  1.2.7
- * @license  http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
- * @author   Temus (temus3@gmail.com)
- * @internal @properties &tvIds=TV Ids;text;&templ=Template;text;&role=Role;text;&resize=Resize: enable;list;true,false;false;&crop=Resize: cropping;list;true,false;true;&prefix=Resize: prefix;text;s_;&th_width=Resize: width;text;&th_height=Resize: height;text;&auto_big=Resize: auto big img;list;true,false;false;&auto_small=Resize: auto small img;list;true,false;false;&w=Preview: width;text;&h=Preview: height;text;&thumbUrl=PHPThumb URL;text;
- * @internal @events OnDocFormRender,OnBeforeDocFormSave
- */
-
 //defined('IN_MANAGER_MODE') or die();
 
 global $content, $default_template, $tmplvars;
@@ -47,8 +33,8 @@ if ($e->name == 'OnDocFormRender') {
 	$modx_script = renderFormElement('image', 0, '', '', '');
 	preg_match('/(<script[^>]*?>.*?<\/script>)/si', $modx_script, $matches);
 	$output = $matches ? $matches[0] : '';
-	$output .= <<< OUT
-<!-- MultiPhotos -->
+$output.=
+<<<OUT
 <style type="text/css">
 .fotoitem {border:1px solid #e3e3e3; margin:0 0 5px; padding:2px 5px 5px 5px; position:relative; overflow:hidden; white-space:nowrap; zoom:1}
 .fotoitem span {display:inline-block; padding-top:3px;}
@@ -71,7 +57,7 @@ var MultiPhotos = new Class({
 		var hpArr = (this.fid.value && this.fid.value!='[]') ? Json.evaluate(this.fid.value) : [null];
 		this.fid.setStyle('display','none');
 		//Создание кнопки для пакетного заполнения
-		this.fillBtn = new Element('input',{'type':'button','title':'{$lang['multipletip']}','value':'{$lang['multiple']}','events':{
+		this.fillBtn = new Element('input',{'type':'button','title':'{$lang["multipletip"]}','value':'{$lang["multiple"]}','events':{
 			'click':function(){
 			window.KCFinder = {};
 			window.KCFinder.callBackMultiple = function(files) {
@@ -99,7 +85,7 @@ var MultiPhotos = new Class({
 				var lastfoto = lastImageCtrl;
 				this.OrigSetUrl(url, width, height, alt);
 				if ($(lastfoto)!=null) $(lastfoto).fireEvent('change');
-			}.bind(this)
+			}.bind(this);
 		}
 		this.sort=new Sortables(this.box,{
 			onStart: function(el){el.setStyles({'background':'#f0f0f0','opacity':1});},
@@ -132,19 +118,20 @@ var MultiPhotos = new Class({
 				this.setEditor();
 			}.bind(this)
 		}});
-		var bInsert = new Element('input',{'type':'button','value':'{$lang['insert']}','events':{
+		
+		var bInsert = new Element('input',{'type':'button','value':'{$lang["insert"]}','events':{
 			'click':function(){BrowseServer('foto_'+this.name+'_'+f)}.bind(this)
 		}});
 		var linkURL = new Element('input',{'type':'text','name':'link_'+this.name+'_'+f,'id':'link_'+this.name+'_'+f,'class':'imageField','value':values[1],'events':{
 			'change':function(){this.setEditor();}.bind(this)
 		}});
-		var bInsertLink = new Element('input',{'type':'button','value':'{$lang['insert']}','events':{
+		var bInsertLink = new Element('input',{'type':'button','value':'{$lang["insert"]}','events':{
 			'click':function(){BrowseServer('link_'+this.name+'_'+f)}.bind(this)
 		}});
 		var imgName = new Element('input',{'type':'text','class':'imageField','value':values[2],'events':{
 			'keyup':function(){this.setEditor();documentDirty=true;}.bind(this)
 		}});
-		var imgChecked = new Element('label').setText('{$lang['checked']}')
+		var imgChecked = new Element('label').setText('{$lang["checked"]}')
 			.adopt(new Element('input',{'type':'checkbox','class':'imageField','value':1,'checked':values[3]==true,'events': {
 			'change':function(){this.setEditor();documentDirty=true;}.bind(this)
 		}}))
@@ -156,8 +143,8 @@ var MultiPhotos = new Class({
 		if (this.box.getElements('div.fotoitem').length>1) acontrol.adopt(new Element('input',{'type':'button','value':'-','events':{
 			'click':function(){rowDiv.remove();this.setEditor();}.bind(this)
 		}}));
-		rowDiv.adopt(this.sp('{$lang['url']}'),this.br(),imgURL,bInsert,this.br(),this.sp('{$lang['link']}'),this.br(),linkURL,bInsertLink,this.br());
-		rowDiv.adopt(this.sp('{$lang['title']}'),this.br(),imgName,this.br(),imgChecked,acontrol);
+		rowDiv.adopt(this.sp('{$lang["url"]}'),this.br(),imgURL,bInsert,this.br(),this.sp('{$lang["link"]}'),this.br(),linkURL,bInsertLink,this.br());
+		rowDiv.adopt(this.sp('{$lang["title"]}'),this.br(),imgName,this.br(),imgChecked,acontrol);
 		imgURL.fireEvent('change');
 	},
 	setEditor: function(){
@@ -180,8 +167,10 @@ window.addEvent('domready', function(){
 	}
 });
 </script>
-<!-- /MultiPhotos -->
 OUT;
+		
+
+	
 $e->output($output);
 }
 if ($e->name == 'OnBeforeDocFormSave') {
