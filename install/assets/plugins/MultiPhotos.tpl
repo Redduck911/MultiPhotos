@@ -1,249 +1,219 @@
-//defined('IN_MANAGER_MODE') or die();
+///defined('IN_MANAGER_MODE') or die();
 
-global $content, $default_template, $tmplvars;
-$tvIds = isset($tvIds) ? $tvIds : 1;
+global $content,$default_template,$tmplvars;
+$tvIds = isset($tvIds) ? $tvIds : 0;
 $w = isset($w) ? $w : 160;
 $h = isset($h) ? $h : 120;
-$templ = isset($templ) ? explode(',', $templ) : false;
-$role = isset($role) ? explode(',', $role) : false;
-$style = (isset($w) || isset($h)) ? "'max-width':'{$w}px','max-height':'{$h}px','cursor':'pointer'" : '';
+$templ = isset($templ) ? explode(',',$templ) : false;
+$role = isset($role) ? explode(',',$role) : false;
+$style = (isset($w) || isset($h)) ? ' "max-width":"{$w}px", "max-height":"{$h}px", "cursor":"pointer" ' : '';
+$styleBool = (isset($w) || isset($h)) ? true : false;
 $site = $modx->config['site_url'];
 $thumbUrl = isset($thumbUrl) ? 'url = (url != "") ? ("'.$thumbUrl.'?src="+escape(url)+"&w='.$w.'&h='.$h.'") : url; ' : 'url = (url != "" && url.search(/http:\/\//i) == -1) ? ("'.$site.'" + url) : url;';
 $cur_templ = isset($_POST['template']) ? $_POST['template'] : (isset($content['template']) ? $content['template'] : $default_template);
 $cur_role = $_SESSION['mgrRole'];
-if (($templ && !in_array($cur_templ, $templ)) || ($role && !in_array($cur_role, $role))) return;
+if (($templ && !in_array($cur_templ,$templ)) || ($role && !in_array($cur_role,$role))) return;
 
-$resize = isset($resize) && ($resize == 'true') ? 1 : 0;
-$crop = isset($crop) && ($crop == 'true') ? 1 : 0;
+$resize = isset($resize)&&($resize=='true') ? 1 : 0;
+$crop = isset($crop)&&($crop=='true') ? 1 : 0;
 $prefix = isset($prefix) ? $prefix : 's_';
-$auto_big = isset($auto_big) && ($auto_big == 'true') ? 1 : 0;
-$auto_small = isset($auto_small) && ($auto_small == 'true') ? 1 : 0;
+$auto_big = isset($auto_big)&&($auto_big=='true') ? 1 : 0;
+$auto_small = isset($auto_small)&&($auto_small=='true') ? 1 : 0;
 
-$lang['insert'] = 'Вставить';
-$lang['url'] = 'Путь:';
-$lang['link'] = 'Ссылка или большая картинка:';
-$lang['title'] = 'Название:';
-$lang['checked'] = 'Использовать в случайной выборке:';
-$lang['multiple'] = 'Пакетное заполнение';
-$lang['multipletip'] = 'Внимание! Галерея будет создана заново!';
+$lang['insert']='Вставить';
+$lang['url']='Путь:';
+$lang['link']='Ссылка или большая картинка:';
+$lang['title']='Название:';
 
 $e = &$modx->Event;
 if ($e->name == 'OnDocFormRender') {
-	require_once(MODX_MANAGER_PATH.'includes/tmplvars.inc.php');
-	$modx_script = renderFormElement('image', 0, '', '', '');
-	preg_match('/(<script[^>]*?>.*?<\/script>)/si', $modx_script, $matches);
-	$output = $matches ? $matches[0] : '';
-$output.=
-<<<OUT
+require_once(MODX_MANAGER_PATH.'includes/tmplvars.inc.php');
+$modx_script = renderFormElement('image',0,'','','');
+preg_match('/(<script[^>]*?>.*?<\/script>)/si', $modx_script, $matches);
+$output = $matches ? $matches[0] : '';
+$output .= <<< OUT
+<!-- MultiPhotos -->
 <style type="text/css">
 .fotoitem {border:1px solid #e3e3e3; margin:0 0 5px; padding:2px 5px 5px 5px; position:relative; overflow:hidden; white-space:nowrap; zoom:1}
 .fotoitem span {display:inline-block; padding-top:3px;}
 .fotoitem input {line-height:1.1; vertical-align:middle;}
-.fotoitem .acontrol { position: absolute;  right: 0; bottom:0}
-.fotoimg {position:absolute; right:0; padding-top:3px;text-align:center}
+.fotoitem input.imageField_multiphotos {width: 50%; max-width: 50%; min-width: 300px;}
+.fotoimg {position:absolute; right:0; padding-top:3px;}
 </style>
 <script type="text/javascript">
 window.ie9=window.XDomainRequest && window.performance; window.ie=window.ie && !window.ie9; /* IE9 patch */
-BrowseServerMultiple = function (ctrl) {
-	lastImageCtrl = ctrl;
-	var w = screen.width * 0.7;
-	var h = screen.height * 0.7;
-	OpenServerBrowser('media/browser/mcpuk/browse.php?opener=tinymce&type=images&langCode=ru', w, h);
-}
 var MultiPhotos = new Class({
 	initialize: function(fid){
-		this.name = fid;
-		this.fid = $(fid);
-		var hpArr = (this.fid.value && this.fid.value!='[]') ? Json.evaluate(this.fid.value) : [null];
-		this.fid.setStyle('display','none');
-		//Создание кнопки для пакетного заполнения
-		this.fillBtn = new Element('input',{'type':'button','title':'{$lang["multipletip"]}','value':'{$lang["multiple"]}','events':{
-			'click':function(){
-			window.KCFinder = {};
-			window.KCFinder.callBackMultiple = function(files) {
-				window.KCFinder = null;
-				//Обработка массива выделенных файлов files[i]
-				var selected = new Array();
-				for (var i=0; i < files.length; i++) {
-					selected[i] = new Array();
-					selected[i][0]='';
-					selected[i][1]=files[i];
-					selected[i][2]='';
-				}
-				$(fid).value = Json.toString(selected);
-			};
-			BrowseServerMultiple()}.bind(this)
-		}});
-		this.fid.getParent().adopt(this.fillBtn); //Вывод кнопки пакетного заполнения
-		this.box = new Element('div',{'class':'fotoEditor'});
-		this.fid.getParent().adopt(this.box);
-		this.foto=0;
-		for (var f=0;f<hpArr.length;f++) this.addItem(hpArr[f]);
+		this.nameJQ = fid;
+		this.fidJQ = jQuery('#'+fid);
+		var hpArrJQ = (this.fidJQ.val() && this.fidJQ.val()!='[]') ? Json.evaluate(this.fidJQ.val()) : [null];
+		this.fidJQ.css('display','none');
+		this.boxJQ = jQuery('<div />').addClass('fotoEditor');
+		this.fidJQ.parent().append(this.boxJQ);
+		this.fotoJQ=0
 		if (typeof(SetUrl) != 'undefined') {
-			this.OrigSetUrl = SetUrl;
-			SetUrl = function(url, width, height, alt) {
+			this.OrigSetUrl = SetUrl;				
+			SetUrl = jQuery.proxy(function(url, width, height, alt) {
 				var lastfoto = lastImageCtrl;
 				this.OrigSetUrl(url, width, height, alt);
-				if ($(lastfoto)!=null) $(lastfoto).fireEvent('change');
-			}.bind(this);
+				if (jQuery(lastfoto)!=null) jQuery(lastfoto).trigger('change');
+			},this)
 		}
-		this.sort=new Sortables(this.box,{
-			onStart: function(el){el.setStyles({'background':'#f0f0f0','opacity':1});},
-			onComplete: function(el){el.setStyle('background','none');this.setEditor();}.bind(this)
-		});
-		this.box.getElements('div.fotoitem').setStyle('cursor','move');
-		this.box.getElements('input').addEvent('mousedown',function(event){event.stopPropagation();});
+		for (var f=0;f<hpArrJQ.length;f++) this.addItemJQ(hpArrJQ[f]);
+		//this.sort=new Sortables(this.box,{
+		//	onStart: function(el){el.setStyles({'background':'#f0f0f0','opacity':1});},
+		//	onComplete: function(el){el.setStyle('background','none');this.setEditor();}.bind(this)
+		//});	
+		//this.box.getElements('div.fotoitem').setStyle('cursor','move');
+		//this.box.getElements('input').addEvent('mousedown',function(event){event.stopPropagation();});
 	},
-	br: function(){return new Element('br');},
-	sp: function(text){return new Element('span').setText(text);},
-	addItem: function(values,elem){
-		this.foto++;
-		var f = this.foto;
-		var rowDiv = new Element('div',{'class':'fotoitem'});
-		if (elem) {rowDiv.injectAfter(elem);} else {this.box.adopt(rowDiv);}
-		if (!values) values=['','','','']; 
-		var imgURL = new Element('input',{'type':'text','name':'foto_'+this.name+'_'+f,'id':'foto_'+this.name+'_'+f,'class':'imageField','value':values[0],'events':{
-			'change':function(){
-				var url = imgURL.value;
-				{$thumbUrl}
-				var imgDiv=$('foto_'+this.name+'_'+f+'_'+'PrContainer');
-				if (imgDiv!=null) imgDiv.remove();
-				if (url != "") {
-					new Element('div',{'class':'fotoimg','id':'foto_'+this.name+'_'+f+'_'+'PrContainer','styles':{'width':'{$w}px'}}).injectTop(rowDiv).adopt(
-						new Element('img',{'src':url,'styles':{ $style },'events':{
-							'click':function(){BrowseServer('foto_'+this.name+'_'+f)}.bind(this)
-						}})
-					);
+	brJQ: function(){return jQuery('<br />');},
+	spJQ: function(text){return jQuery('<span />').text(text);},
+	addItemJQ: function(values,elem){
+		this.fotoJQ++;
+		var f = this.fotoJQ;
+		var rowDivJQ = jQuery('<div />').addClass('fotoitem');
+		if (elem) {rowDivJQ.insertAfter(elem);} else {this.boxJQ.append(rowDivJQ);}
+		if (!values) values=['','',''];
+		var imgURLJQ = jQuery('<input />').attr({type:'text', name:'foto_'+this.nameJQ+'_'+f, id:'foto_'+this.nameJQ+'_'+f,class:'imageField_multiphotos', value:values[0]}).on('change', jQuery.proxy(function(){
+			var url = imgURLJQ.val();
+			{$thumbUrl}
+			var imgDivJQ = jQuery('#foto_'+this.nameJQ+'_'+f+'_'+'PrContainer');
+			if (imgDivJQ!=null) { imgDivJQ.remove(); }
+			if (url != "") {
+				var styles = {};
+				if($styleBool) {
+					styles = {
+						"max-width":"{$w}px",
+						"max-height":"{$h}px",
+						"cursor":"pointer"
+					};
 				}
-				this.setEditor();
-			}.bind(this)
-		}});
-		
-		var bInsert = new Element('input',{'type':'button','value':'{$lang["insert"]}','events':{
-			'click':function(){BrowseServer('foto_'+this.name+'_'+f)}.bind(this)
-		}});
-		var linkURL = new Element('input',{'type':'text','name':'link_'+this.name+'_'+f,'id':'link_'+this.name+'_'+f,'class':'imageField','value':values[1],'events':{
-			'change':function(){this.setEditor();}.bind(this)
-		}});
-		var bInsertLink = new Element('input',{'type':'button','value':'{$lang["insert"]}','events':{
-			'click':function(){BrowseServer('link_'+this.name+'_'+f)}.bind(this)
-		}});
-		var imgName = new Element('input',{'type':'text','class':'imageField','value':values[2],'events':{
-			'keyup':function(){this.setEditor();documentDirty=true;}.bind(this)
-		}});
-		var imgChecked = new Element('label').setText('{$lang["checked"]}')
-			.adopt(new Element('input',{'type':'checkbox','class':'imageField','value':1,'checked':values[3]==true,'events': {
-			'change':function(){this.setEditor();documentDirty=true;}.bind(this)
-		}}))
-		var acontrol = new Element('div',{'class':'acontrol'});
-		var bAdd = new Element('input',{'type':'button','value':'+','events': {
-			'click':function(){this.addItem(null,rowDiv);}.bind(this)
-		}});
-		acontrol.adopt(bAdd);
-		if (this.box.getElements('div.fotoitem').length>1) acontrol.adopt(new Element('input',{'type':'button','value':'-','events':{
-			'click':function(){rowDiv.remove();this.setEditor();}.bind(this)
-		}}));
-		rowDiv.adopt(this.sp('{$lang["url"]}'),this.br(),imgURL,bInsert,this.br(),this.sp('{$lang["link"]}'),this.br(),linkURL,bInsertLink,this.br());
-		rowDiv.adopt(this.sp('{$lang["title"]}'),this.br(),imgName,this.br(),imgChecked,acontrol);
-		imgURL.fireEvent('change');
+				else { styles = {}; }
+				jQuery('<div />').attr({class:'fotoimg', id:'foto_'+this.nameJQ+'_'+f+'_'+'PrContainer' }).width('{$w}px').prependTo(rowDivJQ).append(
+					jQuery('<img />').attr({src:url, class:'foto_img_mf'}).css( styles ).on('click', jQuery.proxy(function(){ BrowseServer('foto_'+this.nameJQ+'_'+f) },this))
+				);
+			}
+			this.setEditorJQ();
+		},this));
+		var bInsertJQ = jQuery('<input />').attr({type:'button', value:'{$lang['insert']}'}).on('click', jQuery.proxy(function(){
+			BrowseServer('foto_'+this.nameJQ+'_'+f);
+		},this));
+		var linkURLJQ = jQuery('<input />').attr({type:'text', name:'link_'+this.nameJQ+'_'+f, id:'link_'+this.nameJQ+'_'+f, class:'imageField_multiphotos', value:values[1]});
+		var bInsertLinkJQ = jQuery('<input />').attr({type:'button', value:'{$lang['insert']}'}).on('click', jQuery.proxy(function(){
+			BrowseServer('link_'+this.nameJQ+'_'+f);
+		},this));
+		var imgNameJQ = jQuery('<input />').attr({type:'text', class:'imageField_multiphotos', value:values[2]}).on('keyup', jQuery.proxy(function(){ this.setEditorJQ(); documentDirty=true; },this));
+		var bAddJQ = jQuery('<input />').attr({type:'button',value:'+', class:'multifotos_add'}).on('click', jQuery.proxy(function() {
+			this.addItemJQ(null,rowDivJQ);
+		},this));
+		rowDivJQ.append(this.spJQ('{$lang['url']}'),this.brJQ(),imgURLJQ,bInsertJQ,this.brJQ(),this.spJQ('{$lang['link']}'),this.brJQ(),linkURLJQ,bInsertLinkJQ,this.brJQ());
+		rowDivJQ.append(this.spJQ('{$lang['title']}'),this.brJQ(),imgNameJQ,bAddJQ);
+		if (this.boxJQ.children('div.fotoitem').length>1) {
+			rowDivJQ.append(jQuery('<input />').attr({type:'button',value:'-'}).on('click', jQuery.proxy(function(){
+				rowDivJQ.remove();
+				this.setEditorJQ();
+			},this)));
+		}
+		imgURLJQ.trigger('change');
 	},
-	setEditor: function(){
-		var hpArr=new Array();
-		this.box.getElements('div.fotoitem').each(function(item){
-			var itemsArr=new Array();
-			var inputs=item.getElements('input.imageField');
-			var noempty=false;
-			inputs.each(function(item){ if (item.type=="text" || item.checked) {itemsArr.push(item.value); if (item.value) noempty=true;}});
-			if (noempty) hpArr.push(itemsArr);
+	setEditorJQ: function(){
+		var hpArrJQ = new Array();
+		var divfotoitemJQ = this.boxJQ.children('div.fotoitem');
+		divfotoitemJQ.each(function(i,elem){
+			var itemsArr = new Array();
+			var inputs = jQuery(this).children('input[type=text]');
+			var noempty = false;
+			inputs.each(function(i2,elem2){itemsArr.push(jQuery(this).val()); if(jQuery(this).val()) noempty=true;});
+			if (noempty) hpArrJQ.push(itemsArr);
 		});
-		this.fid.value = Json.toString(hpArr);
+		this.fidJQ.val((hpArrJQ.length>0) ? Json.toString(hpArrJQ) : '');
+		//console.log(Json.toString(hpArrJQ));
 	}
 });
 window.addEvent('domready', function(){
 	var tvIds = [$tvIds];
 	for (var i=0;i<tvIds.length;i++){
 		var fid = 'tv'+ tvIds[i];
-		if($(fid)!=null) {var modxMultiPhotos=new MultiPhotos(fid);}
+		if(jQuery('#'+fid)!=null) {var modxMultiPhotos = new MultiPhotos(fid);}
 	}
 });
 </script>
+<!-- /MultiPhotos -->
 OUT;
-		
-
-	
 $e->output($output);
 }
-if ($e->name == 'OnBeforeDocFormSave') {
-	$tvIds = explode(',', $tvIds);
-	foreach ($tvIds as $tvid) {
-		if (empty($th_width) && empty($th_height)) return;
-		if (!$resize || !isset($tmplvars[$tvid]) || empty($tmplvars[$tvid][1])) continue;
-		$fotoArr = json_decode($tmplvars[$tvid][1]);
-		@set_time_limit(0);
-		foreach ($fotoArr as $k => &$v) {
-			if (!empty($v[1]) && $auto_small) $v[0] = $v[1];
-			if (!empty($v[0])) {
-				$filename = basename($v[0]);
-				$dirname = str_replace($filename, '', $v[0]);
-				if (!($auto_small && !empty($v[1])) && ($prefix == substr($filename, 0, strlen($prefix)) || $prefix == substr($dirname, -strlen($prefix)))) continue;
-				$new_path = '../'.$dirname.$prefix.$filename;
-				$imgInfo = @getImageSize('../'.$v[0]);
-				if (!is_array($imgInfo)) continue;
-				ob_start();
-				$img_width = $imgInfo[0];
-				$img_height = $imgInfo[1];
-				$width = $img_width;
-				$height = $img_height;
-				$posX = 0;
-				$posY = 0;
-				$ratio = $img_height / $img_width;
-				if (!$th_height) $th_h = round($th_width * $ratio); else $th_h = $th_height;
-				if (!$th_width) $th_w = round($th_height / $ratio); else $th_w = $th_width;
-				$th_ratio = $th_h / $th_w;
-				if ($crop) {
-					if ($ratio > $th_ratio) {
-						$height = round($img_width * $th_ratio);
-						$posY = round(($img_height - $height) / 2);
-					}
-					if ($ratio < $th_ratio) {
-						$width = round($img_height / $th_ratio);
-						$posX = round(($img_width - $width) / 2);
-					}
-				} else {
-					if ($ratio > $th_ratio) $th_w = round($th_h / $ratio);
-					if ($ratio < $th_ratio) $th_h = round($th_w * $ratio);
+if ($e->name == 'OnBeforeDocFormSave'){
+$tvIds=explode(',',$tvIds);
+foreach ($tvIds as $tvid) {
+	if (empty($th_width) && empty($th_height)) return;
+	if (!$resize || !isset($tmplvars[$tvid]) || empty($tmplvars[$tvid][1])) continue;
+	$fotoArr=json_decode($tmplvars[$tvid][1]);
+	@set_time_limit(0);
+	foreach ($fotoArr as $k=>&$v) {
+		if (!empty($v[1]) && $auto_small) $v[0]=$v[1];
+		if (!empty($v[0])){
+			$filename = basename($v[0]);
+			$dirname = str_replace($filename,'',$v[0]);
+			if (!($auto_small && !empty($v[1])) && ($prefix==substr($filename, 0, strlen($prefix)) || $prefix==substr($dirname, -strlen($prefix)))) continue;
+			$new_path = '../'.$dirname.$prefix.$filename;
+			$imgInfo = @getImageSize('../'.$v[0]);
+			if (!is_array($imgInfo)) continue;
+			ob_start();
+			$img_width = $imgInfo[0];
+			$img_height = $imgInfo[1];
+			$width=$img_width;
+			$height=$img_height;
+			$posX=0;
+			$posY=0;	
+			$ratio = $img_height / $img_width;
+			if (!$th_height) $th_h=round($th_width*$ratio); else $th_h=$th_height;
+			if (!$th_width) $th_w=round($th_height/$ratio); else $th_w=$th_width;
+			$th_ratio = $th_h / $th_w;
+			if ($crop) {
+				if ($ratio > $th_ratio) {
+					$height=round($img_width*$th_ratio);
+					$posY=round(($img_height-$height)/2);
 				}
-				switch ($imgInfo[2]) {
-					case 1:
-						$src = ImageCreateFromGif('../'.$v[0]);
-						$dst = ImageCreateTrueColor($th_w, $th_h);
-						ImageCopyResampled($dst, $src, 0, 0, $posX, $posY, $th_w, $th_h, $width, $height);
-						ImageGif($dst, $new_path);
-						break;
-					case 2:
-						$src = ImageCreateFromJpeg('../'.$v[0]);
-						$dst = ImageCreateTrueColor($th_w, $th_h);
-						ImageCopyResampled($dst, $src, 0, 0, $posX, $posY, $th_w, $th_h, $width, $height);
-						ImageJpeg($dst, $new_path, 90);
-						break;
-					case 3:
-						$src = ImageCreateFromPng('../'.$v[0]);
-						$dst = ImageCreateTrueColor($th_w, $th_h);
-						imagesavealpha($dst, true);
-						$cc = imagecolorallocatealpha($dst, 255, 255, 255, 127);
-						imagefill($dst, 0, 0, $cc);
-						ImageCopyResampled($dst, $src, 0, 0, $posX, $posY, $th_w, $th_h, $width, $height);
-						ImagePng($dst, $new_path);
-						break;
+				if ($ratio < $th_ratio) {
+					$width=round($img_height/$th_ratio);
+					$posX=round(($img_width-$width)/2);
 				}
-				imagedestroy($src);
-				imagedestroy($dst);
-				if (empty($v[1]) && $auto_big) $v[1] = $v[0];
-				$v[0] = $dirname.$prefix.$filename;
-				ob_end_clean();
 			}
+			else {
+				if ($ratio > $th_ratio) $th_w=round($th_h/$ratio);
+				if ($ratio < $th_ratio) $th_h=round($th_w*$ratio);
+			}
+			switch($imgInfo[2]){
+			case 1:
+				$src = ImageCreateFromGif('../'.$v[0]);
+				$dst = ImageCreateTrueColor($th_w, $th_h);
+				ImageCopyResampled($dst, $src, 0, 0, $posX, $posY, $th_w, $th_h, $width, $height);
+				ImageGif($dst,$new_path);
+				break;
+			case 2:
+				$src = ImageCreateFromJpeg('../'.$v[0]);
+				$dst = ImageCreateTrueColor($th_w, $th_h);
+				ImageCopyResampled($dst, $src, 0, 0, $posX, $posY, $th_w, $th_h, $width, $height);
+				ImageJpeg($dst,$new_path,90);
+				break;
+			case 3:
+				$src = ImageCreateFromPng('../'.$v[0]);
+				$dst = ImageCreateTrueColor($th_w, $th_h);
+				imagesavealpha($dst, true);
+				$cc=imagecolorallocatealpha($dst, 255, 255, 255, 127);
+				imagefill($dst, 0, 0, $cc); 
+				ImageCopyResampled($dst, $src, 0, 0, $posX, $posY, $th_w, $th_h, $width, $height);
+				ImagePng($dst,$new_path);
+				break;
+			}
+			imagedestroy($src);
+			imagedestroy($dst);
+			if (empty($v[1]) && $auto_big) $v[1]=$v[0];
+			$v[0]=$dirname.$prefix.$filename;
+			ob_end_clean();
 		}
-		$tmplvars[$tvid][1] = str_replace('\\/', '/', json_encode($fotoArr));
 	}
+	$tmplvars[$tvid][1]=str_replace('\\/', '/', json_encode($fotoArr));
 }
-//?>
+}
