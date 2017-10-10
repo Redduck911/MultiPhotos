@@ -42,6 +42,7 @@ $output .= <<< OUT
 </style>
 <script type="text/javascript">
 window.ie9=window.XDomainRequest && window.performance; window.ie=window.ie && !window.ie9; /* IE9 patch */
+!window.jQuery.ui && document.write(decodeURIComponent('%3Cscript%20src%3D%22https%3A%2F%2Fcode.jquery.com%2Fui%2F1.12.1%2Fjquery-ui.js%22%3E%3C%2Fscript%3E'));
 var MultiPhotos = new Class({
 	initialize: function(fid){
 		this.nameJQ = fid;
