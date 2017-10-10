@@ -64,8 +64,8 @@ var MultiPhotos = new Class({
 		//	onStart: function(el){el.setStyles({'background':'#f0f0f0','opacity':1});},
 		//	onComplete: function(el){el.setStyle('background','none');this.setEditor();}.bind(this)
 		//});	
-		//this.box.getElements('div.fotoitem').setStyle('cursor','move');
-		//this.box.getElements('input').addEvent('mousedown',function(event){event.stopPropagation();});
+		this.boxJQ.children('div.fotoitem').css({ cursor:'move' });
+		this.boxJQ.find('input').on('mousedown',function(event){event.stopPropagation();});
 	},
 	brJQ: function(){return jQuery('<br />');},
 	spJQ: function(text){return jQuery('<span />').text(text);},
