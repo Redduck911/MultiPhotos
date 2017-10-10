@@ -99,7 +99,9 @@ var MultiPhotos = new Class({
 		var bInsertJQ = jQuery('<input />').attr({type:'button', value:'{$lang['insert']}'}).on('click', jQuery.proxy(function(){
 			BrowseServer('foto_'+this.nameJQ+'_'+f);
 		},this));
-		var linkURLJQ = jQuery('<input />').attr({type:'text', name:'link_'+this.nameJQ+'_'+f, id:'link_'+this.nameJQ+'_'+f, class:'imageField_multiphotos', value:values[1]});
+		var linkURLJQ = jQuery('<input />').attr({type:'text', name:'link_'+this.nameJQ+'_'+f, id:'link_'+this.nameJQ+'_'+f, class:'imageField_multiphotos', value:values[1]}).on('change', jQuery.proxy(function(){
+			this.setEditorJQ();
+		},this));
 		var bInsertLinkJQ = jQuery('<input />').attr({type:'button', value:'{$lang['insert']}'}).on('click', jQuery.proxy(function(){
 			BrowseServer('link_'+this.nameJQ+'_'+f);
 		},this));
