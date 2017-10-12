@@ -38,6 +38,7 @@ $output .= <<< OUT
 .fotoitem span {display:inline-block; padding-top:3px;}
 .fotoitem input {line-height:1.1; vertical-align:middle;}
 .fotoitem input.imageField_multiphotos {width: 50%; max-width: 50%; min-width: 300px;}
+.fotoitem:first-child input.fotoitemDel{display:none;}
 .fotoimg {position:absolute; right:0; padding-top:3px;}
 </style>
 <script type="text/javascript">
@@ -51,6 +52,11 @@ var MultiPhotos = new Class({
 		this.fidJQ.css('display','none');
 		this.boxJQ = jQuery('<div />').addClass('fotoEditor');
 		this.fidJQ.parent().append(this.boxJQ);
+		this.boxJQ.sortable({
+			axis: 'y',
+			//start: jQuery.proxy(function( event, ui ) {(ui).css(},this),
+			stop: jQuery.proxy(function( event, ui ) {this.setEditorJQ();},this)
+		});
 		this.fotoJQ=0
 		if (typeof(SetUrl) != 'undefined') {
 			this.OrigSetUrl = SetUrl;				
@@ -61,11 +67,7 @@ var MultiPhotos = new Class({
 			},this)
 		}
 		for (var f=0;f<hpArrJQ.length;f++) this.addItemJQ(hpArrJQ[f]);
-		//this.sort=new Sortables(this.box,{
-		//	onStart: function(el){el.setStyles({'background':'#f0f0f0','opacity':1});},
-		//	onComplete: function(el){el.setStyle('background','none');this.setEditor();}.bind(this)
-		//});	
-		this.boxJQ.children('div.fotoitem').css({ cursor:'move' });
+		//this.boxJQ.children('div.fotoitem').css({ cursor:'move' });
 		this.boxJQ.find('input').on('mousedown',function(event){event.stopPropagation();});
 	},
 	brJQ: function(){return jQuery('<br />');},
@@ -112,12 +114,12 @@ var MultiPhotos = new Class({
 		},this));
 		rowDivJQ.append(this.spJQ('{$lang['url']}'),this.brJQ(),imgURLJQ,bInsertJQ,this.brJQ(),this.spJQ('{$lang['link']}'),this.brJQ(),linkURLJQ,bInsertLinkJQ,this.brJQ());
 		rowDivJQ.append(this.spJQ('{$lang['title']}'),this.brJQ(),imgNameJQ,bAddJQ);
-		if (this.boxJQ.children('div.fotoitem').length>1) {
+		//if (this.boxJQ.children('div.fotoitem').length>1) {
 			rowDivJQ.append(jQuery('<input />').attr({type:'button',value:'-'}).on('click', jQuery.proxy(function(){
 				rowDivJQ.remove();
 				this.setEditorJQ();
 			},this)));
-		}
+		//}
 		imgURLJQ.trigger('change');
 	},
 	setEditorJQ: function(){
