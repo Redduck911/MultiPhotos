@@ -75,7 +75,7 @@ var MultiPhotos = new Class({
 	addItemJQ: function(values,elem){
 		this.fotoJQ++;
 		var f = this.fotoJQ;
-		var rowDivJQ = jQuery('<div />').addClass('fotoitem');
+		var rowDivJQ = jQuery('<div />').addClass('fotoitem').css({ cursor:'move' });
 		if (elem) {rowDivJQ.insertAfter(elem);} else {this.boxJQ.append(rowDivJQ);}
 		if (!values) values=['','',''];
 		var imgURLJQ = jQuery('<input />').attr({type:'text', name:'foto_'+this.nameJQ+'_'+f, id:'foto_'+this.nameJQ+'_'+f,class:'imageField_multiphotos', value:values[0]}).on('change', jQuery.proxy(function(){
